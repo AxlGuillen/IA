@@ -1,12 +1,18 @@
 import cv2
 import numpy as np
+import os
 
 # Iniciar la captura de video desde la cámara
 cap = cv2.VideoCapture(0)
 
 # Definir el rango de color que quieres rastrear en el espacio de color HSV (en este caso, azul)
-lower_blue = np.array([40, 150, 0])
-upper_blue = np.array([85, 255, 255])
+lower_blue = np.array([0, 0, 0])
+upper_blue = np.array([180, 255, 50])
+
+saved_image_count = 0
+output_dir = "dataset"
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
 
 while True:
     # Capturar frame por frame
@@ -39,6 +45,10 @@ while True:
         if radius > 10:
             cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
             cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 255), -1)
+
+            image_filename = os.path.join(output_dir, f"detected_object_{saved_image_count}.png")
+            cv2.imwrite(image_filename, frame)
+            saved_image_count += 1
     
     # Mostrar el frame
     cv2.imshow('Frame', frame)
