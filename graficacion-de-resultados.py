@@ -1,25 +1,30 @@
+# Cargar el archivo JSON
 import json
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # Utiliza el backend sin interfaz gráfica
 import matplotlib.pyplot as plt
-import numpy as np
 
-# Cargar datos desde el archivo JSON
-with open('1.json', 'r') as file:
-    datos = json.load(file)
+with open('./game-dataset/1.json') as f:
+    data = json.load(f)
 
-# Extraer entradas y salidas
-entradas = [item['input'] for item in datos]
-salidas = [item['output'][0] for item in datos]
+# Convertir los datos en un DataFrame de Pandas
+df = pd.DataFrame(data)
 
-# Separar las entradas en dos listas para graficar
-x = [entrada[0] for entrada in entradas]  # Primer valor de input
-y = [entrada[1] for entrada in entradas]  # Segundo valor de input
+# Separar las columnas de entrada y salida
+df[['desplazamiento', 'velocidad']] = pd.DataFrame(df['input'].tolist(), index=df.index)
+df['saltando'] = df['output'].apply(lambda x: x[0])  # Extraer el primer elemento de output
 
-# Crear un gráfico de dispersión
+# Graficar con colores para indicar el estado (suelo o aire)
 plt.figure(figsize=(10, 6))
-scatter = plt.scatter(x, y, c=salidas, cmap='bwr', alpha=0.6)
-plt.colorbar(scatter, label='Salida')
-plt.xlabel('Input 1')
-plt.ylabel('Input 2')
-plt.title('Gráfica de Dispersión de Datos de Entrada')
-plt.grid()
-plt.show()
+# Usar el parámetro 'c' para asignar colores en función del estado
+colors = ['blue' if status == 1 else 'red' for status in df['saltando']]
+plt.scatter(df['desplazamiento'], df['velocidad'], c=colors, alpha=0.7)
+plt.title('Desplazamiento y Velocidad con Estado de Suelo o Aire')
+plt.xlabel('Desplazamiento')
+plt.ylabel('Velocidad')
+plt.grid(True)
+plt.legend(handles=[plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=8, label='Suelo (1)'),
+                    plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='red', markersize=8, label='Aire (0)')])
+plt.savefig('grafico_suelo_aire.png')
+print("El gráfico se ha guardado como 'grafico_suelo_aire.png'.")
